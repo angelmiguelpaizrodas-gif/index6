@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de Memoria</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #fff;
+        }
+        
+        .container {
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 800px;
+            width: 100%;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .difficulty {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 25px 0;
+            flex-wrap: wrap;
+        }
+        
+        .difficulty-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid transparent;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            font-size: 1.1rem;
+        }
+        
+        .difficulty-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-3px);
+        }
+        
+        .difficulty-btn.active {
+            background: #ff9d00;
+            color: #333;
+            border-color: #ff7700;
+            box-shadow: 0 5px 15px rgba(255, 157, 0, 0.4);
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .info-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #ff9d00;
+        }
+        
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin: 0 auto;
+            max-width: 550px;
+        }
+        
+        .card {
+            height: 120px;
+            background: linear-gradient(135deg, #3a7bd5, #00d2ff);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 2.5rem;
+            transform-style: preserve-3d;
+            transition: transform 0.5s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+        
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+        }
+        
+        .card-front {
+            background: linear-gradient(135deg, #2193b0, #6dd5ed);
+            transform: rotateY(180deg);
+        }
+        
+        .card-back {
+            background: linear-gradient(135deg, #141E30, #243B55);
+        }
+        
+        .card-back i {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 2.5rem;
+        }
+        
+        .controls {
+            margin: 25px 0 15px;
+        }
+        
+        button {
+            background: #ff9d00;
+            color: #333;
+            border: none;
+            padding: 14px 30px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            margin: 0 10px;
+            box-shadow: 0 5px 15px rgba(255, 157, 0, 0.4);
+        }
+        
+        button:hover {
+            background: #ffaa2b;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 157, 0, 0.5);
+        }
+        
+        #message {
+            font-size: 1.8rem;
+            margin: 20px 0;
+            min-height: 50px;
+            color: #ff9d00;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        
+        .instructions {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 25px;
+            text-align: left;
+        }
+        
+        .instructions h2 {
+            margin-bottom: 15px;
+            text-align: center;
+            color: #ff9d00;
+        }
+        
+        .instructions ul {
+            list-style-type: none;
+            padding: 0 15px;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .instructions li::before {
+            content: "•";
+            color: #ff9d00;
+            font-weight: bold;
+            display: inline-block;
+            width: 1em;
+            margin-right: 5px;
+            font-size: 1.5rem;
+        }
+        
+        @media (max-width: 600px) {
+            #game-board {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
+            }
+            
+            .card {
+                height: 100px;
+                font-size: 2rem;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .difficulty {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .difficulty-btn {
+                width: 200px;
+            }
+        }
+        
+        @media (max-width: 400px) {
+            #game-board {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .card {
+                height: 90px;
+            }
+        }
+        
+        .win-animation {
+            animation: winPulse 1s infinite;
+        }
+        
+        @keyframes winPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-brain"></i> Juego de Memoria</h1>
+        
+        <div class="difficulty">
+            <button class="difficulty-btn active" data-cards="8">Fácil (4x2)</button>
+            <button class="difficulty-btn" data-cards="12">Medio (4x3)</button>
+            <button class="difficulty-btn" data-cards="16">Difícil (4x4)</button>
+            <button class="difficulty-btn" data-cards="20">Experto (5x4)</button>
+        </div>
+        
+        <div class="game-info">
+            <div class="info-item">
+                <div>Movimientos</div>
+                <div class="info-value" id="moves">0</div>
+            </div>
+            <div class="info-item">
+                <div>Tiempo</div>
+                <div class="info-value" id="timer">0s</div>
+            </div>
+            <div class="info-item">
+                <div>Pares Encontrados</div>
+                <div class="info-value" id="pairs">0</div>
+            </div>
+        </div>
+        
+        <div id="game-board"></div>
+        
+        <div id="message">¡Selecciona una dificultad para comenzar!</div>
+        
+        <div class="controls">
+            <button id="start-btn">Comenzar Juego</button>
+            <button id="reset-btn">Reiniciar</button>
+        </div>
+        
+        <div class="instructions">
+            <h2><i class="fas fa-info-circle"></i> Instrucciones</h2>
+            <ul>
+                <li>Selecciona un nivel de dificultad para comenzar</li>
+                <li>Haz clic en las cartas para voltearlas y encontrar los pares</li>
+                <li>Intenta completar el juego con la menor cantidad de movimientos y en el menor tiempo posible</li>
+                <li>Cada par encontrado suma puntos y reduce el tiempo</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Elementos del DOM
+            const gameBoard = document.getElementById('game-board');
+            const movesElement = document.getElementById('moves');
+            const timerElement = document.getElementById('timer');
+            const pairsElement = document.getElementById('pairs');
+            const messageElement = document.getElementById('message');
+            const startBtn = document.getElementById('start-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const difficultyBtns = document.querySelectorAll('.difficulty-btn');
+            
+            // Variables del juego
+            let cards = [];
+            let flippedCards = [];
+            let moves = 0;
+            let pairsFound = 0;
+            let totalPairs = 0;
+            let gameStarted = false;
+            let timerInterval;
+            let seconds = 0;
+            let currentDifficulty = 8;
+            
+            // Símbolos para las cartas (emojis o iconos)
+            const symbols = ['🍎', '🍌', '🍇', '🍊', '🍓', '🍉', '🍒', '🍑', '🍍', '🥥', 
+                            '🥝', '🍋', '🥭', '🍏', '🌶', '🥑', '🥦', '🍆', '🥕', '🌽'];
+            
+            // Inicializar el juego
+            function initGame() {
+                clearInterval(timerInterval);
+                gameBoard.innerHTML = '';
+                flippedCards = [];
+                moves = 0;
+                pairsFound = 0;
+                seconds = 0;
+                gameStarted = false;
+                
+                movesElement.textContent = moves;
+                pairsElement.textContent = pairsFound;
+                timerElement.textContent = '0s';
+                messageElement.textContent = '¡Haz clic en Comenzar Juego!';
+                
+                // Crear pares de cartas según la dificultad
+                totalPairs = currentDifficulty / 2;
+                cards = [];
+                
+                for (let i = 0; i < totalPairs; i++) {
+                    cards.push(symbols[i]);
+                    cards.push(symbols[i]);
+                }
+                
+                // Mezclar las cartas
+                shuffleArray(cards);
+                
+                // Crear el tablero de juego
+                const columns = currentDifficulty <= 12 ? 4 : 5;
+                gameBoard.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
+                
+                cards.forEach((symbol, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.dataset.symbol = symbol;
+                    card.dataset.index = index;
+                    
+                    const cardFront = document.createElement('div');
+                    cardFront.className = 'card-front';
+                    cardFront.textContent = symbol;
+                    
+                    const cardBack = document.createElement('div');
+                    cardBack.className = 'card-back';
+                    const icon = document.createElement('i');
+                    icon.className = 'fas fa-question';
+                    cardBack.appendChild(icon);
+                    
+                    card.appendChild(cardFront);
+                    card.appendChild(cardBack);
+                    
+                    card.addEventListener('click', () => flipCard(card));
+                    gameBoard.appendChild(card);
+                });
+            }
+            
+            // Mezclar array (algoritmo Fisher-Yates)
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+            
+            // Voltear una carta
+            function flipCard(card) {
+                if (!gameStarted) return;
+                if (flippedCards.length >= 2) return;
+                if (card.classList.contains('flipped')) return;
+                
+                card.classList.add('flipped');
+                flippedCards.push(card);
+                
+                if (flippedCards.length === 2) {
+                    moves++;
+                    movesElement.textContent = moves;
+                    
+                    setTimeout(checkMatch, 700);
+                }
+            }
+            
+            // Comprobar si las cartas coinciden
+            function checkMatch() {
+                const [card1, card2] = flippedCards;
+                const match = card1.dataset.symbol === card2.dataset.symbol;
+                
+                if (match) {
+                    // Las cartas coinciden
+                    card1.style.visibility = 'hidden';
+                    card2.style.visibility = 'hidden';
+                    pairsFound++;
+                    pairsElement.textContent = pairsFound;
+                    
+                    if (pairsFound === totalPairs) {
+                        // ¡Juego completado!
+                        clearInterval(timerInterval);
+                        messageElement.textContent = `¡Felicidades! Completado en ${moves} movimientos y ${seconds} segundos.`;
+                        messageElement.classList.add('win-animation');
+                    }
+                } else {
+                    // Las cartas no coinciden, voltear de nuevo
+                    card1.classList.remove('flipped');
+                    card2.classList.remove('flipped');
+                }
+                
+                flippedCards = [];
+            }
+            
+            // Iniciar el temporizador
+            function startTimer() {
+                clearInterval(timerInterval);
+                seconds = 0;
+                timerInterval = setInterval(() => {
+                    seconds++;
+                    timerElement.textContent = `${seconds}s`;
+                }, 1000);
+            }
+            
+            // Event listeners para los botones de dificultad
+            difficultyBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    difficultyBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentDifficulty = parseInt(btn.dataset.cards);
+                    initGame();
+                });
+            });
+            
+            // Event listener para el botón de comenzar
+            startBtn.addEventListener('click', () => {
+                if (!gameStarted) {
+                    gameStarted = true;
+                    startTimer();
+                    messageElement.textContent = '¡Encuentra todos los pares!';
+                    startBtn.textContent = 'Juego en Curso';
+                }
+            });
+            
+            // Event listener para el botón de reiniciar
+            resetBtn.addEventListener('click', () => {
+                initGame();
+                messageElement.classList.remove('win-animation');
+                startBtn.textContent = 'Comenzar Juego';
+            });
+            
+            // Inicializar el juego al cargar la página
+            initGame();
+        });
+    </script>
+</body>
+</html>
